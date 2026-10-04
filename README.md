@@ -58,6 +58,29 @@ Save the file, refresh the browser. That's it.
 - Watch the commas: every project block ends with `},` and every line inside
   ends with a comma.
 
+### Adding a video
+
+Videos go in the same `images` list as photos — just point at an `.mp4` (or
+`.webm`, `.mov`) and the site renders a real video player with controls
+instead of a picture:
+
+```js
+images: [
+  { src: "images/desk-lamp/lamp-lit.jpg",  caption: "Lit on the bench" },
+  { src: "images/desk-lamp/lamp-demo.mp4", caption: "Demo" },
+],
+```
+
+Thumbnails for videos get a play badge automatically. If you want to choose
+the still frame shown before someone hits play, add a `poster`:
+
+```js
+{ src: "images/desk-lamp/lamp-demo.mp4", poster: "images/desk-lamp/still.jpg", caption: "Demo" },
+```
+
+Keep videos under about 50 MB — GitHub rejects files over 100 MB, and big
+videos are slow for visitors on phones. Use H.264 MP4 for the widest support.
+
 ### Adding photos to an existing project
 
 Drop the file in that project's `images/` folder, then add one line to that

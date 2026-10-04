@@ -215,6 +215,17 @@ const projects = [
   },
 
   {
+    title: "Desk Lamp",
+    subtitle: "Fully custom 3D printed minimalist desk lamp",
+    tags: ["3D Printing", "CAD", "Electronics", "Personal"],
+    summary: "Fully custom 3D printed minimalist desk lamp.",
+    images: [
+      { src: "images/desk-lamp/lamp-lit.jpg", caption: "Lit on the bench" },
+      { src: "images/desk-lamp/lamp-demo.mp4", caption: "Demo" },
+    ],
+  },
+
+  {
     title: "Portable Speaker",
     subtitle: "Amp, battery, and driver in a case I can throw in a bag",
     status: "in-progress",

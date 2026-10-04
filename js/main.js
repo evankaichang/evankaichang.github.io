@@ -21,6 +21,10 @@
 
   const list = (v) => (Array.isArray(v) ? v : []);
 
+  // A media item is treated as a video purely by its file extension, so you
+  // can drop an .mp4 into a project's `images` list and it just works.
+  const isVideo = (src) => /\.(mp4|webm|mov|m4v|ogv)(\?.*)?$/i.test(String(src || ""));
+
   /* --- Theme ------------------------------------------------------------- */
 
   const toggle = $("#theme-toggle");
@@ -120,11 +124,29 @@
   /* --- Cards ------------------------------------------------------------- */
 
   function cover(p) {
-    const img = list(p.images)[0];
-    if (!img) return '<div class="card-media-empty">Photos coming soon</div>';
+    const item = list(p.images)[0];
+    if (!item) return '<div class="card-media-empty">Photos coming soon</div>';
+
+    if (isVideo(item.src)) {
+      // `poster` is optional; without one the browser shows the first frame.
+      if (item.poster) {
+        return (
+          '<img src="' + esc(item.poster) + '" alt="' +
+          esc(item.caption || p.title) + '" loading="lazy">' +
+          '<span class="play-badge" aria-hidden="true"></span>'
+        );
+      }
+      return (
+        '<video src="' + esc(item.src) + '#t=0.1" muted playsinline ' +
+        'preload="metadata" tabindex="-1" aria-label="' +
+        esc(item.caption || p.title) + '"></video>' +
+        '<span class="play-badge" aria-hidden="true"></span>'
+      );
+    }
+
     return (
-      '<img src="' + esc(img.src) + '" alt="' +
-      esc(img.caption || p.title) + '" loading="lazy">'
+      '<img src="' + esc(item.src) + '" alt="' +
+      esc(item.caption || p.title) + '" loading="lazy">'
     );
   }
 
@@ -176,6 +198,44 @@
   let slide = 0;        // index of the visible gallery image
   let lastFocused = null;
 
+  // One item in the big gallery slot — an <img>, or a real video player.
+  function mediaHTML(item, p) {
+    if (isVideo(item.src)) {
+      return (
+        '<video id="gallery-media" src="' + esc(item.src) + '" controls ' +
+        'playsinline preload="metadata"' +
+        (item.poster ? ' poster="' + esc(item.poster) + '"' : "") +
+        ">Your browser can't play this video.</video>"
+      );
+    }
+    return (
+      '<img id="gallery-media" src="' + esc(item.src) + '" alt="' +
+      esc(item.caption || p.title) + '">'
+    );
+  }
+
+  // One thumbnail button under the gallery.
+  function thumbHTML(item, i, isCurrent) {
+    const label = isVideo(item.src) ? "Video " : "Photo ";
+    let inner;
+
+    if (isVideo(item.src)) {
+      inner = item.poster
+        ? '<img src="' + esc(item.poster) + '" alt="" loading="lazy">'
+        : '<video src="' + esc(item.src) + '#t=0.1" muted playsinline ' +
+          'preload="metadata" tabindex="-1"></video>';
+      inner += '<span class="play-badge small" aria-hidden="true"></span>';
+    } else {
+      inner = '<img src="' + esc(item.src) + '" alt="" loading="lazy">';
+    }
+
+    return (
+      '<button class="thumb" type="button" data-slide="' + i +
+      '" aria-current="' + Boolean(isCurrent) + '" aria-label="' +
+      label + (i + 1) + '">' + inner + "</button>"
+    );
+  }
+
   function detailHTML(p) {
     const imgs = list(p.images);
     const meta = [p.role, p.year].filter(Boolean).join(" · ");
@@ -189,9 +249,8 @@
     if (imgs.length) {
       html +=
         '<div class="gallery">' +
-          '<div class="gallery-main">' +
-            '<img id="gallery-img" src="' + esc(imgs[0].src) + '" alt="' +
-              esc(imgs[0].caption || p.title) + '">' +
+          '<div class="gallery-main" id="gallery-main">' +
+            mediaHTML(imgs[0], p) +
           "</div>" +
           '<p class="gallery-caption" id="gallery-caption">' +
             esc(imgs[0].caption || "") +
@@ -199,11 +258,7 @@
           (imgs.length > 1
             ? '<div class="thumbs" id="thumbs">' +
               imgs.map(function (im, i) {
-                return (
-                  '<button class="thumb" type="button" data-slide="' + i +
-                  '" aria-current="' + (i === 0) + '" aria-label="Photo ' + (i + 1) + '">' +
-                  '<img src="' + esc(im.src) + '" alt="" loading="lazy"></button>'
-                );
+                return thumbHTML(im, i, i === 0);
               }).join("") +
               "</div>"
             : "") +
@@ -246,12 +301,11 @@
     if (!imgs.length) return;
     slide = (i + imgs.length) % imgs.length;
 
-    const img = $("#gallery-img");
+    // Re-rendering the slot swaps img <-> video cleanly, and tears down any
+    // video that was mid-playback so it stops when you move off it.
+    const slot = $("#gallery-main");
     const cap = $("#gallery-caption");
-    if (img) {
-      img.src = imgs[slide].src;
-      img.alt = imgs[slide].caption || current.title;
-    }
+    if (slot) slot.innerHTML = mediaHTML(imgs[slide], current);
     if (cap) cap.textContent = imgs[slide].caption || "";
 
     const thumbs = document.querySelectorAll("#thumbs .thumb");
@@ -294,8 +348,13 @@
 
   document.addEventListener("keydown", function (e) {
     if (modal.hidden) return;
-    if (e.key === "Escape") closeModal();
-    else if (e.key === "ArrowRight") showSlide(slide + 1);
+    if (e.key === "Escape") { closeModal(); return; }
+
+    // Let the arrow keys scrub the video when it has focus, rather than
+    // yanking the viewer to the next slide.
+    if (e.target && e.target.tagName === "VIDEO") return;
+
+    if (e.key === "ArrowRight") showSlide(slide + 1);
     else if (e.key === "ArrowLeft") showSlide(slide - 1);
   });
 })();
