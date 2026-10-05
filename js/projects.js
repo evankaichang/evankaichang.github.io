@@ -218,10 +218,24 @@ const projects = [
     title: "Desk Lamp",
     subtitle: "Fully custom 3D printed minimalist desk lamp",
     tags: ["3D Printing", "CAD", "Electronics", "Personal"],
-    summary: "Fully custom 3D printed minimalist desk lamp.",
+    summary:
+      "Fully custom 3D printed minimalist desk lamp. There is no switch — " +
+      "rotating the body of the lamp sets the PWM duty cycle, so the same " +
+      "motion turns it on, dims it, and shuts it off.",
+    sections: [
+      {
+        heading: "Design Highlights",
+        items: [
+          "Switchless: rotation of the lamp body drives the PWM duty cycle to the LED",
+          "One continuous motion covers on, dim, and off — no buttons or knobs anywhere on the lamp",
+          "Ribbed helical shell diffuses the light through the printed wall",
+          "Fully custom designed and 3D printed",
+        ],
+      },
+    ],
     images: [
       { src: "images/desk-lamp/lamp-lit.jpg", caption: "Lit on the bench" },
-      { src: "images/desk-lamp/lamp-demo.mp4", caption: "Demo" },
+      { src: "images/desk-lamp/lamp-demo.mp4", caption: "Rotating the body to dim — bright, down low, then off" },
     ],
   },
 
