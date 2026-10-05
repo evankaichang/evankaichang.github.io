@@ -57,7 +57,7 @@
   $("#hero-tagline").textContent = cfg.tagline || "";
 
   const links = [
-    cfg.email && { label: "Email", href: "mailto:" + cfg.email },
+    cfg.email && { label: "Email", copy: cfg.email },
     cfg.resumeUrl && { label: "Resume", href: cfg.resumeUrl },
     cfg.linkedinUrl && { label: "LinkedIn", href: cfg.linkedinUrl },
     cfg.githubUrl && { label: "GitHub", href: cfg.githubUrl },
@@ -65,12 +65,78 @@
 
   $("#hero-links").innerHTML = links
     .map(function (l) {
+      // A `copy` entry becomes a button that puts the text on the clipboard,
+      // rather than a mailto: link that dead-ends when the visitor has no
+      // mail client set up.
+      if (l.copy) {
+        return (
+          '<button type="button" class="copy-btn" data-copy="' + esc(l.copy) +
+          '" title="Copy ' + esc(l.copy) + '">' + esc(l.label) + "</button>"
+        );
+      }
       const ext = /^https?:/.test(l.href)
         ? ' target="_blank" rel="noopener"'
         : "";
       return '<a href="' + esc(l.href) + '"' + ext + ">" + esc(l.label) + "</a>";
     })
     .join("");
+
+  // --- Copy to clipboard -----------------------------------------------
+
+  // Older browsers, pages not served over https, and some embedded
+  // browsers that reject the Clipboard API outright.
+  function legacyCopy(text) {
+    return new Promise(function (resolve, reject) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      ok ? resolve() : reject(new Error("copy failed"));
+    });
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      // The API can exist and still refuse, so fall through on rejection
+      // rather than giving up on the copy.
+      return navigator.clipboard.writeText(text).catch(function () {
+        return legacyCopy(text);
+      });
+    }
+    return legacyCopy(text);
+  }
+
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest("[data-copy]");
+    if (!btn) return;
+
+    const value = btn.dataset.copy;
+    const original = btn.dataset.label || btn.textContent;
+    btn.dataset.label = original;
+
+    copyText(value).then(
+      function () {
+        btn.textContent = "Copied ✓";
+        btn.classList.add("copied");
+      },
+      function () {
+        // Clipboard blocked — show the address so it can be selected by hand.
+        btn.textContent = value;
+      }
+    );
+
+    clearTimeout(btn._resetTimer);
+    btn._resetTimer = setTimeout(function () {
+      btn.textContent = original;
+      btn.classList.remove("copied");
+    }, 1800);
+  });
 
   $("#footer-text").innerHTML =
     esc(cfg.name || "") +

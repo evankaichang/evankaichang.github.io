@@ -113,22 +113,33 @@ img { max-width: 100%; display: block; }
   margin-top: 28px;
 }
 
-.hero-links a {
+.hero-links a,
+.hero-links button {
   display: inline-block;
   padding: 8px 16px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--bg-raised);
   color: var(--text);
+  font-family: inherit;
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
+  cursor: pointer;
   transition: border-color .15s ease, color .15s ease, transform .15s ease;
 }
-.hero-links a:hover {
+.hero-links a:hover,
+.hero-links button:hover {
   border-color: var(--accent);
   color: var(--accent);
   transform: translateY(-1px);
+}
+
+/* Confirmation state after the address lands on the clipboard. */
+.hero-links button.copied {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 
 /* --- Toolbar / filters --------------------------------------------------- */
