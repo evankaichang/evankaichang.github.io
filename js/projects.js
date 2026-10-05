@@ -235,6 +235,7 @@ const projects = [
     ],
     images: [
       { src: "images/desk-lamp/lamp-lit.jpg", caption: "Lit on the bench" },
+      { src: "images/desk-lamp/section-view-cad.jpg", caption: "CAD section view — internals and base" },
       { src: "images/desk-lamp/lamp-demo.mp4", caption: "Rotating the body to dim — bright, down low, then off" },
     ],
   },
