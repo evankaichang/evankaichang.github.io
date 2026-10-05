@@ -228,7 +228,9 @@ const projects = [
         items: [
           "Switchless: rotation of the lamp body drives the PWM duty cycle to the LED",
           "One continuous motion covers on, dim, and off — no buttons or knobs anywhere on the lamp",
-          "Ribbed helical shell diffuses the light through the printed wall",
+          "The ribbed shell you rotate turns over a fixed internal column and base",
+          "Thin printed wall diffuses the LED over the lamp's full height, with no bright spot showing through",
+          "Modeled in section so the internals and electronics were laid out before the first print",
           "Fully custom designed and 3D printed",
         ],
       },
